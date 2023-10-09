@@ -1,0 +1,39 @@
+{
+  "name": "full-backend-zero",
+  "version": "1.0.0",
+  "description": "backend zero tann",
+  "main": "sever.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon ./src/sever.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thaiduytan/Backend_Nodejs_Level01.git"
+  },
+  "keywords": [
+    "nodejs",
+    "react"
+  ],
+  "author": "duy tanzz",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/thaiduytan/Backend_Nodejs_Level01/issues"
+  },
+  "homepage": "https://github.com/thaiduytan/Backend_Nodejs_Level01#readme",
+  "dependencies": {
+    "api-query-params": "^5.4.0",
+    "dotenv": "16.0.3",
+    "ejs": "3.1.8",
+    "express": "4.18.2",
+    "express-fileupload": "1.4.0",
+    "mongodb": "4.13.0",
+    "mongoose": "6.7.2",
+    "mongoose-delete": "0.5.4",
+    "mysql2": "2.3.3",
+    "uuidv4": "^6.2.13"
+  },
+  "devDependencies": {
+    "nodemon": "2.0.20"
+  }
+}
