@@ -5,10 +5,18 @@ const participantSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
-    //   unique: true, // Đảm bảo email là duy nhất
+      //   unique: true, // Đảm bảo email là duy nhất
     },
-    password: String,
-    username: String,
+    password: {
+      type: String,
+      required: true,
+      //   unique: true, // Đảm bảo email là duy nhất
+    },
+    username: {
+      type: String,
+      required: true,
+      //   unique: true, // Đảm bảo email là duy nhất
+    },
     role: {
       type: String,
       enum: ["USER", "ADMIM"], // Đặt giá trị hợp lệ cho vai trò

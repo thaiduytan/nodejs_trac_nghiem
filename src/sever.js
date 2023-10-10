@@ -2,6 +2,7 @@ const express = require("express");
 const configViewEngine = require("./config/viewEngine");
 const fileUpload = require("express-fileupload");
 
+const apiRoutes = require("./routes/api");
 const connection = require("./config/database");
 const { MongoClient } = require("mongodb");
 const { mongoose } = require("mongoose");
@@ -34,8 +35,8 @@ configViewEngine(app);
 // khai bao routes CSR
 // app.use("/", webRoutes);
 // khai bao routes SSR
-// app.use("/v1/api/", apiRoutes);
-app.use("/api/v1/",apiRoutes)
+app.use("/v1/api/", apiRoutes);
+// app.use("/api/v1/",apiRoutes)
 
 
 // const ngov = new User({ name: "ngov" });
