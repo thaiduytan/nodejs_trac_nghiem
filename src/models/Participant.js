@@ -19,7 +19,7 @@ const participantSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["USER", "ADMIM"], // Đặt giá trị hợp lệ cho vai trò
+      enum: ["USER", "ADMIN"], // Đặt giá trị hợp lệ cho vai trò
       default: "USER", // Giá trị mặc định là 'user'
     },
     image: String,

@@ -53,7 +53,7 @@ module.exports = {
       $or: [{ email: email }, { username: email }],
     });
 
-    console.log("loginService: >>> user:", user);
+    // console.log("loginService: >>> user:", user);
 
     if (user) {
       const isCorrectPassword = checkPasswordCorrect(password, user.password);

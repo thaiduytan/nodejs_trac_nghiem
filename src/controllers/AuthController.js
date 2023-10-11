@@ -1,4 +1,3 @@
-const Participant = require("../models/Participant");
 const {
   createRegisterService,
   loginService,
@@ -42,4 +41,5 @@ module.exports = {
       });
     }
   },
+
 };
