@@ -18,7 +18,10 @@ module.exports = {
     const totalPages = Math.ceil(totalCount / limit);
 
     // populate (de truy xuat du lieu user)
-    let result = await Participant.find(filter).limit(limit).skip(skip).exec();
+    let result = await Participant.find({ deleted: false, ...filter })
+      .limit(limit)
+      .skip(skip)
+      .exec();
     let newResult = [];
     for (let i = 0; i < result.length; i++) {
       newResult.push({
@@ -35,9 +38,10 @@ module.exports = {
       newResult,
     };
   },
-  createParticipantService: async (data, imageUrl, res) => {
-    const { email, password, username, role } = data;
-
+  createParticipantService: async (data, imageUrl) => {
+    const { email, password, username, role, userImage } = data;
+    let result;
+    let newResult = {};
     if (isValidEmail(email)) {
       const isExistingEmail = await checkEmailExists(email);
       if (isExistingEmail) {
@@ -54,6 +58,7 @@ module.exports = {
         EC: -1,
       };
     }
+
     if (!email || !password) {
       return {
         DT: "",
@@ -62,20 +67,28 @@ module.exports = {
       };
     }
 
-    const imageBuffer = fs.readFileSync(imageUrl.path);
-    const imageBase64 = imageBuffer.toString("base64");
-
     const hashedPassword = await bcrypt.hash(password, 10);
+    if (imageUrl) {
+      const imageBuffer = fs.readFileSync(imageUrl.path);
+      const imageBase64 = imageBuffer.toString("base64");
 
-    const result = await Participant.create({
-      email,
-      password: hashedPassword,
-      username,
-      role,
-      image: imageBase64,
-    });
+      result = await Participant.create({
+        email,
+        password: hashedPassword,
+        username,
+        role,
+        image: imageBase64,
+      });
+    }
+    if (!userImage) {
+      result = await Participant.create({
+        email,
+        password: hashedPassword,
+        username,
+        role,
+      });
+    }
 
-    let newResult = {};
     newResult = {
       id: result?._id,
       username: result?.username,
@@ -89,6 +102,77 @@ module.exports = {
       EM: "Create a new participant succeed",
     };
   },
-  updateParticipantService: () => {},
-  deleteParticipantService: () => {},
+  updateParticipantService: async (data, imageUrl) => {
+    const { id, username, role, userImage } = data;
+    let myPaticipant = await Participant.findOne({ _id: id });
+    // // ko dc xoa
+    if (
+      myPaticipant.email === "admin@gmail.com" ||
+      myPaticipant.email === "user@gmail.com" ||
+      myPaticipant.email === "tan@gmail.com"
+    ) {
+      return {
+        DT: {
+          email: myPaticipant.email,
+        },
+        EC: -1,
+        EM: "Không được phếp update Email mẫu này =_=",
+      };
+    }
+
+    if (imageUrl) {
+      const imageBuffer = fs.readFileSync(imageUrl.path);
+      const imageBase64 = imageBuffer.toString("base64");
+      await Participant.updateOne(
+        { _id: id },
+        { username, role, image: imageBase64 }
+      );
+    }
+
+    if (!userImage) {
+      await Participant.updateOne({ _id: id }, { username, role });
+    }
+
+    let newResult = {};
+    newResult = {
+      id: myPaticipant?._id,
+      username: myPaticipant?.username,
+      role: myPaticipant?.role,
+    };
+    return {
+      DT: newResult,
+      EC: 0,
+      EM: "Update success.",
+    };
+  },
+  deleteParticipantService: async (data) => {
+    const { id } = data;
+
+    const myPaticipant = await Participant.findOne({ _id: id });
+
+    // // ko dc xoa
+    if (
+      myPaticipant.email === "admin@gmail.com" ||
+      myPaticipant.email === "user@gmail.com" ||
+      myPaticipant.email === "tan@gmail.com"
+    ) {
+      return {
+        DT: {
+          id: "1",
+          email: myPaticipant.email,
+        },
+        EC: -1,
+        EM: "Định mệnh - Xóa tài khoản này lấy gì mà test @@",
+      };
+    }
+
+    await Participant.deleteById(id);
+    return {
+      DT: {
+        id: id,
+      },
+      EC: 0,
+      EM: "Delete the user succeed",
+    };
+  },
 };

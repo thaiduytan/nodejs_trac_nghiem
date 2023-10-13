@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+var mongoose_delete = require("mongoose-delete");
 const participantSchema = new mongoose.Schema(
   {
     email: {
@@ -30,7 +30,7 @@ const participantSchema = new mongoose.Schema(
     timestamps: true, // createdAt, updatedAt
   }
 );
-
+participantSchema.plugin(mongoose_delete, { deletedAt: true });
 const Participant = mongoose.model("participant", participantSchema);
 
 module.exports = Participant;

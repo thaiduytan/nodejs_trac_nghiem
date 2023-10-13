@@ -1,6 +1,8 @@
 const {
   getParticipantService,
   createParticipantService,
+  updateParticipantService,
+  deleteParticipantService,
 } = require("../services/participantService");
 const { uploadSingleFileAPI } = require("../services/uploadFileService");
 
@@ -51,6 +53,42 @@ module.exports = {
     }
   },
 
-  putParticipant: (req, res) => {},
-  deleteParticipant: (req, res) => {},
+  putParticipant: async (req, res) => {
+    // console.log(req.body);
+    // res.send("ok");
+    try {
+      let imageUrl = "";
+      if (req.files) {
+        imageUrl = await uploadSingleFileAPI(req.files.userImage);
+      }
+      const result = await updateParticipantService(req.body, imageUrl, res);
+      return res.status(200).json({
+        DT: result.DT,
+        EC: result.EC,
+        EM: result.EM,
+      });
+    } catch (error) {
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+  deleteParticipant: async (req, res) => {
+    try {
+      let result = await deleteParticipantService(req.body);
+      const { EC } = result;
+      if (EC === -1) {
+        return res.status(200).json({
+          DT: result.DT,
+          EC: result.EC,
+          EM: result.EM,
+        });
+      }
+      return res.status(200).json({
+        DT: result.DT,
+        EC: result.EC,
+        EM: result.EM,
+      });
+    } catch (error) {
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
 };
