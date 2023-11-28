@@ -1,3 +1,4 @@
+require("dotenv").config(); // cài thư viện env imporrt và confire ( npm install --save-exact dotenv@16.0.3 )
 const express = require("express");
 const configViewEngine = require("./config/viewEngine");
 const fileUpload = require("express-fileupload");
@@ -6,16 +7,22 @@ const apiRoutes = require("./routes/api");
 const connection = require("./config/database");
 const { MongoClient } = require("mongodb");
 const { mongoose } = require("mongoose");
-const Participant = require("./models/Participant");
-const Quizz = require("./models/Quiz");
-const ParticipantQuiz = require("./models/ParticipantQuiz");
-// const connection = require("./config/database");
-// cài thư viện env imporrt và confire ( npm install --save-exact dotenv@16.0.3 )
-require("dotenv").config();
+const { createJWT, verifyToken } = require("./midleware/JWTAction");
+var cookieParser = require("cookie-parser");
+const bodyParser = require('body-parser');
+// const QuizQuestion = require("./models/QuizQuestion");
+// const QuizAnswer = require("./models/QuizAnswer");
 
 const app = express();
 const port = process.env.PORT || 8888;
 const hostname = process.env.HOST_NAME;
+
+// Parse Cookie header
+app.use(cookieParser());
+
+// Sử dụng body-parser middleware để xử lý dữ liệu từ yêu cầu.
+// Giới hạn kích thước của yêu cầu là 10MB trong ví dụ này. Bạn có thể điều chỉnh giới hạn theo nhu cầu của bạn.
+app.use(bodyParser.json({ limit: '10mb' }));
 
 // Add headers before the routes are defined
 app.use(function (req, res, next) {
@@ -32,12 +39,17 @@ app.use(function (req, res, next) {
   // Request headers you wish to allow
   res.setHeader(
     "Access-Control-Allow-Headers",
-    "X-Requested-With,content-type"
+    "X-Requested-With,content-type, Authorization"
   );
 
   // Set to true if you need the website to include cookies in the requests sent
   // to the API (e.g. in case you use sessions)
   res.setHeader("Access-Control-Allow-Credentials", true);
+
+  // fix loi cors  khi gui bearer tokeen tu fe
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
 
   // Pass to next layer of middleware
   next();
@@ -61,11 +73,12 @@ configViewEngine(app);
 // khai bao routes CSR
 // app.use("/", webRoutes);
 // khai bao routes SSR
-app.use("/v1/api/", apiRoutes);
-// app.use("/api/v1/",apiRoutes)
 
-// const ngov = new User({ name: "ngov" });
-// ngov.save();
+// app.use("/api/v1/",apiRoutes)
+app.use("/v1/api/", apiRoutes);
+app.use((req, res) => {
+  return res.send("404 not found");
+});
 
 //  CONNECTION //--- https://mongoosejs.com/docs/connections.html
 // tạo thứ tự kết nối trước, rồi mới chạy app.listen
@@ -75,8 +88,13 @@ app.use("/v1/api/", apiRoutes);
     await connection();
     mongoose.connection.on("connected", () => {
       console.log("Kết nối đến MongoDB đã thành công");
-
-      app.listen(port, hostname, () => {
+      app.listen(port, hostname, async () => {
+        // const res = await QuizAnswer({
+        //   description: "cauD toi la ai",
+        //   correct_answer: "true",
+        //   question_id: "6530f0b80499502409865cb5",
+        // });
+        // res.save();
         console.log(`Example app listening on port ${port}`);
       });
     });

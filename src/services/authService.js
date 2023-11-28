@@ -5,6 +5,8 @@ const {
   checkEmailExists,
   checkPasswordCorrect,
 } = require("../validate/validateAuth");
+const { createJWT } = require("../midleware/JWTAction");
+require("dotenv").config();
 
 module.exports = {
   // =====================================================================================================
@@ -49,13 +51,21 @@ module.exports = {
   loginService: async (data, res) => {
     const { email, password } = data;
 
-    const user = await Participant.findOne({
+    let user = await Participant.findOne({
       $or: [{ email: email }, { username: email }],
     });
 
-    // console.log("loginService: >>> user:", user);
-
+    
     if (user) {
+      let payload = {
+        email: user?.email,
+        role: user?.role,
+        id: user?._id,
+      };
+
+      let token = createJWT(payload);
+
+
       const isCorrectPassword = checkPasswordCorrect(password, user.password);
       if (isCorrectPassword) {
         // { 200
@@ -70,8 +80,10 @@ module.exports = {
         //   "EC": 0,
         //   "EM": "Login succeed"
         // }
-        return res.status(200).json({
+        return {
           DT: {
+            access_token: token,
+            refresh_token: "",
             username: user.username,
             role: user.role,
             email: user.email,
@@ -79,20 +91,19 @@ module.exports = {
           },
           EC: 0,
           EM: "Login succeed",
-        });
+        };
       } else {
-        return res.status(200).json({
+        return {
           DT: "",
           EC: -1,
           EM: "Your email/password is incorrect",
-        });
+        };
       }
     }
-
-    return res.status(200).json({
+    return {
       DT: "",
       EC: -1,
       EM: "Not found user with the email",
-    });
+    };
   },
 };

@@ -27,7 +27,13 @@ module.exports = {
   },
   postLogin: async (req, res) => {
     try {
-      const result = await loginService(req.body,res);
+      const result = await loginService(req.body, res);
+      // set cookie
+      res.cookie("jwt", result.DT.access_token, {
+        httpOnly: true,
+        maxAge: 60 * 60 * 1000,
+      });
+
       return res.status(200).json({
         EM: result.EM,
         EC: result.EC,
@@ -41,5 +47,21 @@ module.exports = {
       });
     }
   },
+  postLogout: (req, res) => {
+    try {
+      res.clearCookie("jwt");
 
+      return res.status(200).json({
+        EM: "ok",
+        EC: 0,
+        DT: "",
+      });
+    } catch (error) {
+      return res.status(500).json({
+        EM: "Error from sever",
+        EC: "-1",
+        DT: "",
+      });
+    }
+  }
 };

@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
+var mongoose_delete = require("mongoose-delete");
 
-const quizAmswerSchema = new mongoose.Schema(
+const quizAnswerSchema = new mongoose.Schema(
   {
     description: String,
-    correct_answer: String,
+    correct_answer: Boolean,
     question_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "quizQuestion",
@@ -14,6 +15,7 @@ const quizAmswerSchema = new mongoose.Schema(
   }
 );
 
-const QuizAmswer = mongoose.model("quizAmswer", quizAmswerSchema);
+quizAnswerSchema.plugin(mongoose_delete, { deletedAt: true });
+const QuizAnswer = mongoose.model("quizAnswer", quizAnswerSchema);
 
-module.exports = QuizAmswer;
+module.exports = QuizAnswer;

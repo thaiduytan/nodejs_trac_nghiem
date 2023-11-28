@@ -3,6 +3,9 @@ const bcrypt = require("bcrypt");
 const fs = require("fs");
 const Participant = require("../models/Participant");
 const { isValidEmail, checkEmailExists } = require("../validate/validateAuth");
+const { extractToken, verifyToken } = require("../midleware/JWTAction");
+const History = require("../models/History");
+const Quizz = require("../models/Quiz");
 
 module.exports = {
   getParticipantService: async (queryString) => {
@@ -173,6 +176,120 @@ module.exports = {
       },
       EC: 0,
       EM: "Delete the user succeed",
+    };
+  },
+  updateProfileService: async (req, data, imageUrl) => {
+    const token = extractToken(req);
+    const infoPaticipant = verifyToken(token);
+    const { username } = data;
+
+    const userId = infoPaticipant.id;
+
+    // check invalid username
+    if (!username) {
+      return {
+        DT: "",
+        EM: "Invalid Email",
+        EC: -1,
+      };
+    }
+
+    if (imageUrl) {
+      // console.log("ok");
+      const imageBuffer = fs.readFileSync(imageUrl.path);
+      const imageBase64 = imageBuffer.toString("base64");
+      await Participant.updateOne(
+        { _id: userId },
+        { username: username, image: imageBase64 }
+      );
+    } else {
+      // console.log("ok2");
+      await Participant.updateOne(
+        { _id: userId },
+        { username: username, image: imageUrl }
+      );
+    }
+
+    return {
+      DT: {
+        username: username,
+      },
+      EC: 0,
+      EM: "Update success.",
+    };
+  },
+  changePasswordService: async (data, req) => {
+    const token = extractToken(req);
+    const infoPaticipant = verifyToken(token);
+    const { current_password, new_password } = data;
+    const myInfor = await Participant.findById(infoPaticipant.id);
+    const myPassword = myInfor.password;
+
+    const isTruePassword = await bcrypt.compare(current_password, myPassword);
+
+    if (!current_password || !new_password) {
+      return {
+        DT: "",
+        EM: "Invalid current_password or new_password",
+        EC: -1,
+      };
+    }
+
+    if (!isTruePassword) {
+      // console.log("ok");
+      return {
+        DT: "",
+        EC: 0,
+        EM: "Thông tin không chính xác",
+      };
+    }
+    // console.log("ok2");
+    const hashedPassword = await bcrypt.hash(new_password, 10);
+    await Participant.updateOne(
+      { _id: infoPaticipant.id },
+      { password: hashedPassword }
+    );
+
+    return {
+      DT: "",
+      EC: 0,
+      EM: "Cập nhật mật khẩu thành công.",
+    };
+  },
+  getHistoryService: async (req) => {
+    const token = extractToken(req);
+    const infoPaticipant = verifyToken(token);
+    const myHistory = await History.find({
+      participant_id: infoPaticipant.id,
+    });
+
+    
+    const result = await Promise.all(
+      myHistory.map(async (history) => {
+        const infoQuiz = await Quizz.findById(history.quiz_id).exec();
+        return {
+          id: history._id,
+          participant_id: history.participant_id,
+          quiz_id: history.quiz_id,
+          total_questions: history.totalQuestions,
+          total_correct: history.totalCorrect,
+          createdAt: history.createdAt,
+          updatedAt: history.updatedAt,
+          quizHistory: {
+            id: infoQuiz._id,
+            name: infoQuiz.name,
+            description: infoQuiz.description,
+          },
+        };
+      })
+    );
+
+    return {
+      DT: {
+        data: result,
+      },
+      EC: 0,
+      EM: "Get History succeed",
     };
   },
 };
