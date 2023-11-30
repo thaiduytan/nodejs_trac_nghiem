@@ -15,6 +15,12 @@ module.exports = {
   // Quiz
   createANewQuizService: async (req, imageUrl) => {
     const { description, name, difficulty } = req.body;
+
+    // console.log("createANewQuizService: >>> name:", name);
+
+
+    // console.log("createANewQuizService: >>> description:", description);
+
     const imageBuffer = fs.readFileSync(imageUrl.path);
     const imageBase64 = imageBuffer.toString("base64");
 

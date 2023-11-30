@@ -113,6 +113,7 @@ module.exports = {
   },
   getQuizWithQA: async (req, res) => {
     try {
+      console.log(req.params.id);
       const result = await getQuizWithQAService(req.params.id);
       // return res.send("ok");
       return res.status(200).json({

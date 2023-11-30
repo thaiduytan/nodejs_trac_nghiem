@@ -16,9 +16,14 @@ module.exports = {
     let skip = (page - 1) * limit;
 
     // Truy vấn tổng số lượng dữ liệu
-    const totalCount = await Participant.countDocuments({});
+    const totalCount = await Participant.countDocuments({ deleted: false });
+
+    console.log("getParticipantService: >>> totalCount:", totalCount);
+
     // Tính totalPages dựa trên totalCount và limit
     const totalPages = Math.ceil(totalCount / limit);
+
+    console.log("getParticipantService: >>> totalPages:", totalPages);
 
     // populate (de truy xuat du lieu user)
     let result = await Participant.find({ deleted: false, ...filter })
@@ -47,7 +52,9 @@ module.exports = {
     let newResult = {};
     if (isValidEmail(email)) {
       const isExistingEmail = await checkEmailExists(email);
-      if (isExistingEmail) {
+
+      if (isExistingEmail.length > 0) {
+        console.log("vao");
         return {
           DT: "",
           EC: -1,
@@ -72,6 +79,7 @@ module.exports = {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     if (imageUrl) {
+      // console.log("VAO1");
       const imageBuffer = fs.readFileSync(imageUrl.path);
       const imageBase64 = imageBuffer.toString("base64");
 
@@ -82,8 +90,8 @@ module.exports = {
         role,
         image: imageBase64,
       });
-    }
-    if (!userImage) {
+    } else {
+      // console.log("VAO2", userImage);
       result = await Participant.create({
         email,
         password: hashedPassword,
@@ -91,6 +99,15 @@ module.exports = {
         role,
       });
     }
+    // if (!userImage) {
+    //   console.log("VAO2", userImage);
+    //   result = await Participant.create({
+    //     email,
+    //     password: hashedPassword,
+    //     username,
+    //     role,
+    //   });
+    // }
 
     newResult = {
       id: result?._id,
@@ -263,7 +280,6 @@ module.exports = {
       participant_id: infoPaticipant.id,
     });
 
-    
     const result = await Promise.all(
       myHistory.map(async (history) => {
         const infoQuiz = await Quizz.findById(history.quiz_id).exec();

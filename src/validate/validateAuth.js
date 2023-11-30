@@ -9,7 +9,7 @@ module.exports = {
     return bcrypt.compareSync(inputPW, hashPW); //true /false
   },
   checkEmailExists: async (email) => {
-    const existingEmail = await Participant.findOne({ email });
+    const existingEmail = await Participant.find({ deleted: false, email });
     return existingEmail;
   },
 };

@@ -52,10 +52,10 @@ module.exports = {
     const { email, password } = data;
 
     let user = await Participant.findOne({
+      deleted: false,
       $or: [{ email: email }, { username: email }],
     });
 
-    
     if (user) {
       let payload = {
         email: user?.email,
@@ -64,7 +64,6 @@ module.exports = {
       };
 
       let token = createJWT(payload);
-
 
       const isCorrectPassword = checkPasswordCorrect(password, user.password);
       if (isCorrectPassword) {

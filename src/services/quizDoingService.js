@@ -12,15 +12,29 @@ module.exports = {
     let listQuiz = [];
 
     let result = [];
+    // let participantQuiz = await ParticipantQuiz.find({
+    //   participant_id: infoPaticipant.id,
+    // })
+    //   .select("-_id")
+    //   .lean(); // Loại bỏ trường _id từ kết quả
     let participantQuiz = await ParticipantQuiz.find({
       participant_id: infoPaticipant.id,
     })
       .select("-_id")
       .lean(); // Loại bỏ trường _id từ kết quả
+
+    // console.log(
+    //   "getAllQuizByParticipantService: >>> participantQuiz:",
+    //   participantQuiz
+    // );
+
     for (let i = 0; i < participantQuiz.length; i++) {
       let quiz = await Quizz.findOne({
         _id: participantQuiz[i].quiz_id.toString(),
       });
+
+      // console.log("getAllQuizByParticipantService: >>> quiz:", quiz);
+
       listQuiz.push(quiz);
     }
     result = listQuiz.map((quiz) => {
@@ -50,6 +64,7 @@ module.exports = {
     }).exec();
     for (let i = 0; i < questions.length; i++) {
       let answers = await QuizAnswer.find({
+        deleted: false,
         question_id: questions[i]._id.toString(),
       });
       for (let j = 0; j < answers.length; j++) {
@@ -78,7 +93,6 @@ module.exports = {
     const idQuiz = await ParticipantQuiz.findOne({
       participant_id: infoPaticipant.id,
     }).exec();
-    
 
     let bodyJson = req.body;
     let listAnswers = bodyJson.answers;
@@ -90,8 +104,6 @@ module.exports = {
       countCorrect: 0,
       countTotal: listAnswers.length,
     };
-
-    // console.log("test",vd);
     // ----------------------count countCorrect and countTotal -------------------
     listAnswers.forEach((answer) => {
       if (answer.userAnswerId.length < 2) {
@@ -108,13 +120,9 @@ module.exports = {
       _id: { $in: userAnswerId },
       correct_answer: true,
     }).exec();
-
-    // console.log("postQuizSubmitService: >>> correctAnswer:", correctAnswer);
-
     if (userCorrectAnswer) {
       resultCount.countCorrect = userCorrectAnswer.length;
     }
-    // console.log("postQuizSubmitService: >>> resultCount:", resultCount);
     // ----------------------count countCorrect and countTotal -------------------
 
     listAnswers.forEach((answer) => {
@@ -122,22 +130,13 @@ module.exports = {
         userQuestion.push(answer.questionId);
       }
     });
-
-    // console.log("listAnswers.forEach >>> listAnswers:", listAnswers);
-
     const listTheQuestionHasBeenAnswered = await QuizQuestion.find({
       _id: { $in: userQuestion },
     }).exec();
     const listCorrectAnswer = await QuizAnswer.find({
       correct_answer: true,
     }).exec();
-    // console.log(
-    //   "postQuizSubmitService: >>> listTheQuestionHasBeenAnswered:",
-    //   listTheQuestionHasBeenAnswered
-    // );
-
     for (let i = 0; i < listAnswers.length; i++) {
-      // console.log(listAnswers[i].userAnswerId);
       userAnswerIdNested.push(listAnswers[i].userAnswerId);
     }
     quizData = listTheQuestionHasBeenAnswered.map((questionAnswered, index) => {

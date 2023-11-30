@@ -41,7 +41,7 @@ module.exports = {
       const result = await createParticipantService(req.body, imageUrl, res);
       const { EC } = result;
       if (EC === -1) {
-        return res.status(400).json({
+        return res.status(200).json({
           DT: "",
           EC: result.EC,
           EM: result.EM,
